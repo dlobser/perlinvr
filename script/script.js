@@ -136,10 +136,22 @@
 
 	function initScene() {
 
+		eyeBall = new THREE.Mesh(new THREE.SphereGeometry( .03,10,10),new THREE.MeshLambertMaterial( {color:0x111111} ));
+		eyeBall.position.z=-.6;
+		eyeBall.position.x=-.2;
+		eyeBall2 = eyeBall.clone();
+		eyeBall2.position.x=.2;
+
+		mouth = new THREE.Mesh(new THREE.BoxGeometry(.5,.03,.02),new THREE.MeshLambertMaterial( {color:0x111111} ));
+		mouth.position.z=-.5;
+		mouth.position.y=-.2;
 		otherHead = new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial(  ));
+		otherHead.add(eyeBall);
+		otherHead.add(eyeBall2);
+		otherHead.add(mouth);
 		otherHeadParent = new THREE.Object3D();
 		otherHeadParent.add(otherHead);
-		otherHeadParent.position.z = 2;
+		otherHeadParent.position.z = 3;
 		otherHeadParent.position.y = 2;
 
 
@@ -149,6 +161,7 @@
 
 		scene = new THREE.Scene();
 		scene.add(otherHeadParent);
+		linePickSetup();
 		scene.fog = new THREE.Fog( 0xffffff, FOG * 0.9, FOG );
 
 		head = new THREE.Object3D();
@@ -162,22 +175,22 @@
 		head.add(camera);
 
 		// BOXEN
-		var boxGeo = new THREE.BoxGeometry(1, 1, 1);
+		var boxGeo = new THREE.BoxGeometry(1, 10, 1);
 		for (var i = 0; i < 40; i++) {
 			var box = new THREE.Mesh( boxGeo,
 				new THREE.MeshLambertMaterial({
-					color: (new THREE.Color()).setHSL(Math.random(), 0.7, 0.25)
+					color: (new THREE.Color()).setHSL(Math.random()*.1, 0.7, 0.25)
 				})
 			);
 			var angle = Math.PI * i / 20;
 			box.position.set(
 				Math.cos(angle) * 4,
-				Math.sin(angle * 8) + 2,
+				Math.sin(angle * 8) - 2,
 				Math.sin(angle) * 4
 			);
 			box.receiveShadow = true;
 			scene.add(box);
-			pickTargets.push(box);
+			// pickTargets.push(box);
 		}
 
 		vrMouse = new THREE.VRMouse( camera, pickTargets, {
@@ -229,16 +242,16 @@
 		floor.receiveShadow = true;
 		floor.rotateX(-Math.PI / 2);
 		scene.add(floor);
-		pickTargets.push(floor);
+		// pickTargets.push(floor);
 
 		var sphere = new THREE.Mesh(
-			new THREE.SphereGeometry( 5, 32, 32 ),
-			new THREE.MeshNormalMaterial()
+			new THREE.SphereGeometry( 1, 32, 32 ),
+			new THREE.MeshLambertMaterial( {color:0x5588ee} )
 		);
 		sphere.position.set( 0, 10, 4 );
 		sphere.name = 'sphere';
 		scene.add( sphere );
-		pickTargets.push( sphere );
+		// pickTargets.push( sphere );
 
 		var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.475 );
 		directionalLight.position.set( 100, 100, -100 );
@@ -392,6 +405,40 @@
 				vrButton.disabled = false;
 			}
 		}, 1);
+	}
+
+	function linePickSetup(){
+	    plane2 = new THREE.Mesh(new THREE.PlaneGeometry( 10,10,10,10),new THREE.MeshLambertMaterial( { color:0xFFFFFF, transparent:true, opacity:.1,emissive:0x99DDFF} ));
+	    plane2.rotation.x = Math.PI;
+	    plane2.position.z = 2;
+	    plane2.position.y = 1;
+	    scene.add(plane2);
+	    // var sp = new THREE.Mesh(new THREE.PlaneGeometry( 1,1,1,1),new THREE.MeshLambertMaterial(  ));
+	    // sp.rotation.x = Math.PI;
+	    // 	sp.position.z=2;
+	    // scene.add(sp)
+	    pickTargets.push(plane2);
+
+	}
+
+	function drawLine(arr){
+
+		if(lines){
+			lines.traverse(function(obj){
+		        if(obj instanceof THREE.Mesh){
+		            obj.geometry.dispose();
+		            obj.material.dispose();
+		        }
+		    });
+		}
+
+		lines = new THREE.Object3D();
+
+		for(var i = 0 ; i < arr.length ; i++){
+			
+		}
+
+    	
 	}
 
 	init();
