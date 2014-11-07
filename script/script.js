@@ -46,6 +46,7 @@
 				info = document.getElementById('info');
 
 		var socketInfo = {};
+		otherInfo = null;
 
 		var clock = new THREE.Clock();
 
@@ -119,27 +120,48 @@
 		}
 
 		socket.on('broadcastInfo', function (data) {
-				console.log("receive from server someone's data " + data);
+				otherInfo = data;
+				// console.log("receive from server someone's data " + data);
+				// console.log( data);
 		});
 
 		function animate() {
 
 				updatePosition();
 				vrControls.update();
-
-				otherHead.quaternion.copy(camera.quaternion);
-				var vec = camera.position.clone();
-				vec.multiplyScalar(2);
-				otherHead.position = vec;
-				otherHead.position.x = -vec.x;
-				otherHead.position.y = vec.y;
-				otherHead.position.z = vec.z;
+				// console.log(otherInfo.pos);
+				if(otherInfo!=null){
+									// console.log(otherInfo.quat);
+					otherHead.quaternion.x = otherInfo.quat._x;		
+					otherHead.quaternion.y = otherInfo.quat._y;		
+					otherHead.quaternion.z = otherInfo.quat._z;		
+					otherHead.quaternion.w = otherInfo.quat._w;		
+					// otherHead.quaternion.copy(otherInfo.quat);
+					var vec = new THREE.Vector3(otherInfo.x,otherInfo.y,otherInfo.z);
+					 // otherInfo.pos;
+					vec.multiplyScalar(2);
+					otherHead.position = vec;
+					otherHead.position.x = -vec.x;
+					otherHead.position.y = vec.y;
+					otherHead.position.z = vec.z;
+					// console.log(otherHead.position);
+				}
+				else{
+					otherHead.quaternion.copy(camera.quaternion);
+					var vec = camera.position.clone();
+					vec.multiplyScalar(2);
+					otherHead.position = vec;
+					otherHead.position.x = -vec.x;
+					otherHead.position.y = vec.y;
+					otherHead.position.z = vec.z;
+				}
 
 				drawLine(curves);
 
 				socketInfo.quat = camera.quaternion;
 				socketInfo.pos = camera.position;
 				socketInfo.curves = curves;
+				socketInfo.id = Math.random();
 
 				//console.log(socketInfo);
 				socket.emit('socketInfo', socketInfo);
