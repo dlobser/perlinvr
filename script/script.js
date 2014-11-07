@@ -137,7 +137,7 @@
 		socketInfo.pos = camera.position;
 		socketInfo.curves = curves;
 
-		console.log(socketInfo);
+		// console.log(socketInfo);
 		
 		// console.log(curves);
 		// console.log(otherHead.position);
