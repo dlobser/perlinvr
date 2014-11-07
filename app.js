@@ -50,11 +50,14 @@ io.on('connection', function (socket) {
     console.log(data);
   });
 
-  console.log("Hello world - "+ socket.id);
+  console.log("Hello world, I am - "+ socket.id);
 
-  // socket.emit('connected', { hello: 'world' });
-  // socket.emit('connected',send_msg);
   clients.push(socket.id);
+
+
+  socket.on('socketInfo',function(data){
+    socket.broadcast.emit(data);
+  });
 
 });
 
