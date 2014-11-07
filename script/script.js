@@ -44,6 +44,8 @@
 		infobutton = document.getElementById('infobutton'),
 		info = document.getElementById('info');
 
+	var socketInfo = {quat:{},pos:{},curves:{}};
+
 	var clock = new THREE.Clock();
 
 	THREE.Clock.prototype.reset = function () {
@@ -116,6 +118,8 @@
 	}
 
 	function animate() {
+
+
 		updatePosition();
 		vrControls.update();
 		
@@ -128,6 +132,12 @@
 		otherHead.position.z = vec.z;
 
 		drawLine(curves);
+
+		socketInfo.quat = camera.quaternion;
+		socketInfo.pos = camera.position;
+		socketInfo.curves = curves;
+
+		console.log(socketInfo);
 		
 		// console.log(curves);
 		// console.log(otherHead.position);
