@@ -126,7 +126,10 @@
 		otherHead.position.x = -vec.x;
 		otherHead.position.y = vec.y;
 		otherHead.position.z = vec.z;
+
+		drawLine(curves);
 		
+		// console.log(curves);
 		// console.log(otherHead.position);
 		// otherHead.quaternion.x+=.4;
 		vrEffect.render( scene, camera );
@@ -155,12 +158,13 @@
 		otherHeadParent.position.y = 2;
 
 
-		
+		lines = new THREE.Object3D();
 
 		renderer = new THREE.WebGLRenderer();
 
 		scene = new THREE.Scene();
 		scene.add(otherHeadParent);
+		scene.add(lines);
 		linePickSetup();
 		scene.fog = new THREE.Fog( 0xffffff, FOG * 0.9, FOG );
 
@@ -175,7 +179,7 @@
 		head.add(camera);
 
 		// BOXEN
-		var boxGeo = new THREE.BoxGeometry(1, 10, 1);
+		var boxGeo = new THREE.BoxGeometry(2, 15, 2);
 		for (var i = 0; i < 40; i++) {
 			var box = new THREE.Mesh( boxGeo,
 				new THREE.MeshLambertMaterial({
@@ -184,18 +188,28 @@
 			);
 			var angle = Math.PI * i / 20;
 			box.position.set(
-				Math.cos(angle) * 4,
+				Math.cos(angle) * 10,
 				Math.sin(angle * 8) - 2,
-				Math.sin(angle) * 4
+				Math.sin(angle) * 10
 			);
 			box.receiveShadow = true;
 			scene.add(box);
 			// pickTargets.push(box);
 		}
 
+		curves = [];
+
+		
+
+		var draw = false;
+		var newLine = true;
+
 		vrMouse = new THREE.VRMouse( camera, pickTargets, {
 			element: renderer.domElement,
 			near: 1,
+			draw: false,
+			newLine: true,
+			// check: 12,
 			onMouseOver: function (obj) {
 				console.log('hover', obj);
 			},
@@ -203,17 +217,43 @@
 				console.log('stop hover', obj);
 			},
 			onClick: function (intersection) {
-				var box = new THREE.Mesh( boxGeo,
-					new THREE.MeshLambertMaterial({
-						color: (new THREE.Color()).setHSL(Math.random(), 0.7, 0.25)
-					})
-				);
-				box.scale.set(0.2, 0.2, 0.2);
-				box.position.copy(intersection.point);
-				scene.add(box);
-				pickTargets.push(box);
+				// console.log(this.check);
+				// var box = new THREE.Mesh( boxGeo,
+				// 	new THREE.MeshLambertMaterial({
+				// 		color: (new THREE.Color()).setHSL(Math.random(), 0.7, 0.25)
+				// 	})
+				// );
+				// box.scale.set(0.2, 0.2, 0.2);
+				// box.position.copy(intersection.point);
+				// scene.add(box);
+				// pickTargets.push(box);
+				// this.draw=!this.draw;
+				// console.log(this.draw);
+			},
+			onMouseDown: function(){
+				draw = true;
+				if(newLine){
+					newCurve = [];
+					curves.push(newCurve);
+				}
+				newLine = false;
+			},
+			onMouseUp: function(){
+				draw = false;
+				newLine = true;
+				curves.redraw=false;
+				
+			},
+			onMouseMove: function(intersection){
+				if(draw){
+					curves.redraw=true;
+					// console.log(intersection.point);
+					newCurve.push(intersection.point);
+				}
 			}
 		} );
+
+
 		scene.add(vrMouse.pointer);
 		renderer.domElement.addEventListener('click', function () {
 			vrMouse.lock();
@@ -423,22 +463,30 @@
 
 	function drawLine(arr){
 
-		if(lines){
-			lines.traverse(function(obj){
-		        if(obj instanceof THREE.Mesh){
-		            obj.geometry.dispose();
-		            obj.material.dispose();
-		        }
-		    });
-		}
+		if(arr.redraw==true){
+			if(lines){
+				scene.remove(lines);
+				lines.traverse(function(obj){
+			        if(obj instanceof THREE.Mesh){
+			            obj.geometry.dispose();
+			            obj.material.dispose();
+			        }
+			        obj=null;
+			    });
+			}
 
-		lines = new THREE.Object3D();
+			lines = new THREE.Object3D();
+			scene.add(lines);
 
-		for(var i = 0 ; i < arr.length ; i++){
-			
-		}
-
-    	
+			if(arr.length>0){
+				for(var i = 0 ; i < arr.length ; i++){
+					if(arr[i].length>1){
+						var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.SplineCurve3( arr[i]), arr[i].length , .02),new THREE.MeshLambertMaterial( {color:0x111111}));
+				        lines.add(tube);
+				    }
+				}
+			}
+    	}
 	}
 
 	init();
