@@ -118,10 +118,16 @@
 	function animate() {
 		updatePosition();
 		vrControls.update();
-		console.log(camera.quaternion);
+		
 		otherHead.quaternion.copy(camera.quaternion);
-				console.log(otherHead);
-
+		var vec = camera.position.clone();
+		vec.multiplyScalar(2);
+		otherHead.position = vec;
+		otherHead.position.x = -vec.x;
+		otherHead.position.y = vec.y;
+		otherHead.position.z = vec.z;
+		
+		// console.log(otherHead.position);
 		// otherHead.quaternion.x+=.4;
 		vrEffect.render( scene, camera );
 
