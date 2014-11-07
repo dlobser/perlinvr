@@ -118,15 +118,31 @@
 	function animate() {
 		updatePosition();
 		vrControls.update();
+		console.log(camera.quaternion);
+		otherHead.quaternion.copy(camera.quaternion);
+				console.log(otherHead);
+
+		// otherHead.quaternion.x+=.4;
 		vrEffect.render( scene, camera );
 
 		requestAnimationFrame( animate );
 	}
 
 	function initScene() {
+
+		otherHead = new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial(  ));
+		otherHeadParent = new THREE.Object3D();
+		otherHeadParent.add(otherHead);
+		otherHeadParent.position.z = 2;
+		otherHeadParent.position.y = 2;
+
+
+		
+
 		renderer = new THREE.WebGLRenderer();
 
 		scene = new THREE.Scene();
+		scene.add(otherHeadParent);
 		scene.fog = new THREE.Fog( 0xffffff, FOG * 0.9, FOG );
 
 		head = new THREE.Object3D();
