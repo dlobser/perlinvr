@@ -5,10 +5,9 @@ var ejs = require('ejs');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var fs = require('fs');
-var port = process.env.PORT || 8000 ;
+var port = process.env.PORT || 8000;
 
 var clients = [];
-
 
 // Set up the view directory
 app.set("views", __dirname);
@@ -19,10 +18,9 @@ app.set('view engine', 'html');
 
 app.use(express.static(__dirname + '/script'));
 
+app.get('/', function (req, res) {
 
-app.get('/',function(req,res){
-
-    res.render('index.html');
+  res.render('index.html');
 
 });
 
@@ -40,43 +38,41 @@ app.get('/',function(req,res){
 // }
 
 io.on('connection', function (socket) {
-  
+
   var send_msg = {
-    id:socket.id,
+    id: socket.id,
     info: 'helloWorld'
   };
 
   socket.on('Hey', function (data) {
-    console.log(data);
+    console.log('receive msg from client' + data);
   });
 
-  console.log("Hello world, I am - "+ socket.id);
+  //console.log("Hello world, I am - " + socket.id);
 
   clients.push(socket.id);
 
-
-  socket.on('socketInfo',function(data){
-    socket.broadcast.emit(data);
+  socket.on('socketInfo', function (data) {
+    //console.log(data);
+    socket.broadcast.emit('broadcastInfo', data);
   });
 
 });
 
-
 io.on('disconnect', function (socket) {
-  
 
-  console.log("bye world - "+ socket.id);
+  console.log("bye world - " + socket.id);
 
-  socket.emit('disconnect', { bye: 'world' });
-  
+  socket.emit('disconnect', {
+    bye: 'world'
+  });
+
   for (var i = 0; i < clients.length; i++) {
     if (clients[i] == socket.id) {
-      clients.splice(i,1);
+      clients.splice(i, 1);
     }
   }
 
-
 });
-
 
 http.listen(8000);

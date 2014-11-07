@@ -9,6 +9,7 @@
 				MOVE_SPEED = 1,
 				SLOW_SPEED = MOVE_SPEED / 2,
 
+				socket = io.connect('http://localhost'),
 				camera,
 				head,
 				scene,
@@ -44,11 +45,7 @@
 				infobutton = document.getElementById('infobutton'),
 				info = document.getElementById('info');
 
-		var socketInfo = {
-				quat: {},
-				pos: {},
-				curves: {}
-		};
+		var socketInfo = {};
 
 		var clock = new THREE.Clock();
 
@@ -121,6 +118,10 @@
 				}
 		}
 
+		socket.on('broadcastInfo', function (data) {
+				console.log("receive from server someone's data " + data);
+		});
+
 		function animate() {
 
 				updatePosition();
@@ -140,8 +141,8 @@
 				socketInfo.pos = camera.position;
 				socketInfo.curves = curves;
 
-				// console.log(socketInfo);
-
+				//console.log(socketInfo);
+				socket.emit('socketInfo', socketInfo);
 				// console.log(curves);
 				// console.log(otherHead.position);
 				// otherHead.quaternion.x+=.4;
@@ -379,6 +380,9 @@
 		}
 
 		function init() {
+				socket.emit('Hey', {
+						my: 'Whats up'
+				});
 				initScene();
 
 				resize();
