@@ -139,7 +139,7 @@
 					otherHead.quaternion.z = otherInfo.quat._z;		
 					otherHead.quaternion.w = otherInfo.quat._w;		
 					// otherHead.quaternion.copy(otherInfo.quat);
-					var vec = new THREE.Vector3(otherInfo.x,otherInfo.y,otherInfo.z);
+					var vec = new THREE.Vector3(otherInfo.pos.x,otherInfo.pos.y,otherInfo.pos.z);
 					 // otherInfo.pos;
 					vec.multiplyScalar(2);
 					otherHead.position = vec;
@@ -579,6 +579,18 @@
 								}
 						}
 				}
+		}
+
+
+		window.onkeyup = onKeyUp;
+
+		function onKeyUp(evt) {
+			
+			if(evt.keyCode == 69){
+				console.log(curves);
+				curves = [];
+			}
+				
 		}
 
 		init();
