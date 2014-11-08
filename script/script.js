@@ -9,7 +9,9 @@
 				MOVE_SPEED = 1,
 				SLOW_SPEED = MOVE_SPEED / 2,
 
-				socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
+				// socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
+								socket = io.connect('http://localhost'),
+
 				camera,
 				head,
 				scene,
@@ -144,7 +146,29 @@
 					otherHead.position.x = -vec.x;
 					otherHead.position.y = vec.y;
 					otherHead.position.z = vec.z;
-					// console.log(otherHead.position);
+					// // console.log(otherHead.position);
+					if(otherInfo.curves.length>0){
+
+						// console.log(otherInfo.curves);
+						var tempCurves = [];
+						for(var i = 0 ; i < otherInfo.curves.length ; i++){
+							var tCurve = [];
+							for(var j = 0 ; j < otherInfo.curves[i].length ; j++){
+								tCurve.push(new THREE.Vector3(otherInfo.curves[i][j].x,otherInfo.curves[i][j].y,otherInfo.curves[i][j].z));
+							}
+							tempCurves.push(tCurve);
+						}
+						for(var i = 0 ; i < curves.length ; i++){
+							tempCurves.push(curves[i]);
+						}
+						tempCurves.redraw = true;
+						drawLine(tempCurves);
+						// drawLine(curves);
+						// console.log(tempCurves);
+						console.log(curves);
+					}
+					else
+						drawLine(curves);
 				}
 				else{
 					otherHead.quaternion.copy(camera.quaternion);
@@ -154,9 +178,11 @@
 					otherHead.position.x = -vec.x;
 					otherHead.position.y = vec.y;
 					otherHead.position.z = vec.z;
+					curves.redraw = true;
+					console.log(curves);
+					drawLine(curves);
 				}
 
-				drawLine(curves);
 
 				socketInfo.quat = camera.quaternion;
 				socketInfo.pos = camera.position;
@@ -285,7 +311,8 @@
 								if (draw) {
 										curves.redraw = true;
 										// console.log(intersection.point);
-										newCurve.push(intersection.point);
+										if(intersection)
+											newCurve.push(intersection.point);
 								}
 						}
 				});
