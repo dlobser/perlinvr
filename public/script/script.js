@@ -9,8 +9,8 @@
     MOVE_SPEED = 1,
     SLOW_SPEED = MOVE_SPEED / 2,
 
-    socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
-    //socket = io.connect('http://localhost'),
+    //socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
+    socket = io.connect('http://localhost'),
 
     camera,
     head,
