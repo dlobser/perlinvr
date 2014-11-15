@@ -201,24 +201,23 @@
 				// otherHead.quaternion.x+=.4;
 				vrEffect.render(scene, camera);
 
-        console.log(psys.geometry.attributes);
+
         for( var i = 0; i < psys.geometry.attributes.position.array.length; i++ ) {
 
             var pos = psys.geometry.attributes.position.array[i];
-
-            pos[i]  =Math.random()*1000;
+            psys.geometry.attributes.position.array[i] += (.5-Math.random())*.1;
 
         }
 
 
         psys.geometry.attributes.size.needsUpdate = true;
         psys.geometry.attributes.position.needsUpdate = true;
-        psys.material.uniforms.time.value = Math.random();
-        psys.material.uniforms.offz.value = Math.random()+15;
-        psys.material.uniforms.offer.value = Math.random();
-        psys.material.uniforms.pSize.value = Math.random();
+        // psys.material.uniforms.time.value = Math.random();
+        // psys.material.uniforms.offz.value = Math.random()+15;
+        // psys.material.uniforms.offer.value = Math.random();
+        // psys.material.uniforms.pSize.value = Math.random();
 
-        psys.material.uniforms.boing.value = Math.random();//*mouseX*30;
+        // psys.material.uniforms.boing.value = Math.random();//*mouseX*30;
 
 
 
@@ -971,9 +970,9 @@ noiseShader = ["vec3 mod289(vec3 x)",
 
             values_size[ v ] = Math.random()*.5;
 
-            positions[ v * 3 + 0 ] = ( Math.random() * 2 - 1 ) * radius;
-            positions[ v * 3 + 1 ] = 1+( Math.random() * 2 - 1 ) * radius;
-            positions[ v * 3 + 2 ] = 2+( Math.random() * 2 - 1 ) * radius;
+            positions[ v * 3 + 0 ] = Math.sin(v*.1);//( Math.random() * 2 - 1 ) * radius;
+            positions[ v * 3 + 1 ] = 2+Math.cos(v*.1);//1+( Math.random() * 2 - 1 ) * radius;
+            positions[ v * 3 + 2 ] = 2+Math.sin(v*.1);//2+( Math.random() * 2 - 1 ) * radius;
 
             color.setHSL( v / particles, 0.0, 1 );
 
