@@ -1,8 +1,8 @@
 (function (exports) {
   function ParticleSystem(_amount, _size, _texture) {
     var amount = _amount || 1000;
-    var size = _size || .04;
-    var texture = _texture || "img/rainbow.png";
+    var size = _size || .02;
+    var texture = _texture || "img/cat4.png";
 
     var noiseShader = ["vec3 mod289(vec3 x)",
       "{",
@@ -188,22 +188,20 @@
                 return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\
             }\
             void main() {\
-                vColor = vec3(customColor.x,.2+customColor.y*size*.05,customColor.z*size*.1)*.2;\
+                float minus = 10.0-size*20.;\
+                vColor = vec3(customColor.x*minus,customColor.x*minus,minus)*.2;\
                 vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\
                 vec3 rando = vec3(rand(vec2(mvPosition.x+time,mvPosition.y+time)));\
                 float siner = mvPosition.x+mvPosition.y+mvPosition.z;\
                 float ns =  cnoise(time*.1+vec3(mvPosition.x,mvPosition.y+10.,mvPosition.z+3.)*.06*boing);\
                 float nsy = cnoise(100.+time*.1+mvPosition.xyz*.03*boing);\
-                float ns2 =  cnoise(time*.1+vec3(mvPosition.x,mvPosition.y+10.,mvPosition.z+3.)*.06*boing)*.3;\
+                float ns2 =  cnoise(time*.1+vec3(mvPosition.x,mvPosition.y+10.,mvPosition.z+3.)*1.06*boing)*.3;\
                 float nsy2 = cnoise(100.+time*.1+mvPosition.xyz*.03*boing)*.01;\
                 vec3 ox = vec3(sin(time+mvPosition.x*.1),cos(time+mvPosition.y*.1),sin(mvPosition.z*.1));\
-                mvPosition.z+=(size*(1.+ns2*.01))*offz+(ns2*ns);\
-                mvPosition.y+=(mvPosition.z*.0051)*ns+(ns*ns2)*offer;\
-                mvPosition.x+=(mvPosition.z*.0051)*nsy+(nsy*nsy2)*offer;\
                 float xyoff = abs(mvPosition.x) + abs(mvPosition.y);\
-                gl_PointSize = 500.*size;\
+                gl_PointSize = 100.*size;\
                 vec4 p = projectionMatrix * mvPosition;\
-                gl_Position = p+vec4(ox*swirl,1.);\
+                gl_Position = p+swirl;\
             }\
             "].join("\n"),
 
@@ -218,7 +216,7 @@
                 uniform sampler2D texture;\
                 varying vec3 vColor;\
                 void main() {\
-                    gl_FragColor = vec4( color * vColor, 1.0 );\
+                    gl_FragColor = vec4( color * vColor.r, vColor.b );\
                     gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );\
                 }\
                 "].join("\n")
@@ -265,7 +263,7 @@
       },
       color: {
         type: "c",
-        value: new THREE.Color(0x5599ee)
+        value: new THREE.Color(0xffffff)
       },
       texture: {
         type: "t",
@@ -281,7 +279,8 @@
       uniforms: lightShader.uniforms,
       vertexShader: noiseShaderConcat,
       fragmentShader: lightShader.fragmentShader,
-      blending: THREE.AdditiveBlending,
+      rotation: Math.PI / 2,
+      // blending: THREE.AdditiveBlending,
       depthTest: false,
       transparent: true,
     });
@@ -299,17 +298,17 @@
 
     for (var v = 0; v < particles; v++) {
 
-      values_size[v] = Math.random() * size;
+      values_size[v] = size;
 
       positions[v * 3 + 0] = Math.sin(v * .1); //( Math.random() * 2 - 1 ) * radius;
-      positions[v * 3 + 1] = 2 + Math.cos(v * .1); //1+( Math.random() * 2 - 1 ) * radius;
-      positions[v * 3 + 2] = 2 + Math.sin(v * .1); //2+( Math.random() * 2 - 1 ) * radius;
+      positions[v * 3 + 1] = Math.cos(v * .1); //1+( Math.random() * 2 - 1 ) * radius;
+      positions[v * 3 + 2] = Math.sin(v * .1); //2+( Math.random() * 2 - 1 ) * radius;
 
-      color.setHSL(v / particles, 0.0, 1);
+      color.setHSL(v / particles, 1.0, .5);
 
-      values_color[v * 3 + 0] = color.r;
-      values_color[v * 3 + 1] = color.g;
-      values_color[v * 3 + 2] = color.b;
+      values_color[v * 3 + 0] = 1;
+      values_color[v * 3 + 1] = 1;
+      values_color[v * 3 + 2] = 1;
 
     }
 
@@ -318,18 +317,29 @@
     geo.addAttribute('size', new THREE.BufferAttribute(values_size, 1));
 
     this.psys = new THREE.PointCloud(geo, shaderMaterial);
+    this.psys.frustumCulled = false;
+
   }
 
   ParticleSystem.prototype.animate = function () {
-    for (var i = 0; i < this.psys.geometry.attributes.position.array.length; i++) {
+    // for (var i = 0; i < this.psys.geometry.attributes.position.array.length; i++) {
 
-      var pos = this.psys.geometry.attributes.position.array[i];
-      this.psys.geometry.attributes.position.array[i] += (.5 - Math.random()) * .1;
+    //   var pos = this.psys.geometry.attributes.position.array[i];
+    //   this.psys.geometry.attributes.position.array[i] += (.5 - Math.random()) * .1;
 
+    // }
+
+    for (var q = 0; q < this.psys.geometry.attributes.size.array.length; q++) {
+      if (this.psys.geometry.attributes.size.array[q] < .5)
+        this.psys.geometry.attributes.size.array[q] += .01;
+    }
+    for (var q = 0; q < this.psys.geometry.attributes.position.array.length; q++) {
+      this.psys.geometry.attributes.position.array[q] += Math.sin(this.psys.geometry.attributes.position.array[q] + q) * .001;
     }
 
     this.psys.geometry.attributes.size.needsUpdate = true;
     this.psys.geometry.attributes.position.needsUpdate = true;
+    this.psys.material.uniforms.time.value = .1;
 
     // this.psys.material.uniforms.time.value = Math.random();
     // this.psys.material.uniforms.offz.value = Math.random()+15;
