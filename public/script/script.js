@@ -9,8 +9,8 @@
     MOVE_SPEED = 1,
     SLOW_SPEED = MOVE_SPEED / 2,
 
-    socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
-    // socket = io.connect('http://localhost'),
+    //socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
+    socket = io.connect('http://localhost'),
 
     camera,
     head,
@@ -137,7 +137,7 @@
     updatePosition();
     vrControls.update();
     // console.log(otherInfo);
-    if (otherInfo != null) {
+    if (otherInfo !== null) {
       // console.log(otherInfo.quat);
       otherHead.quaternion.x = otherInfo.quat._x;
       otherHead.quaternion.y = -otherInfo.quat._y;
@@ -687,9 +687,11 @@
 
         if (otherIsDrawing) {
           var catPos = arr[arr.length - 1][arr[arr.length - 1].length - 1];
-          this.cat = catParent.clone();
-          this.cat.position = catPos;
-          lines.add(this.cat);
+          var cat = catParent.clone();
+          cat.position = catPos;
+          console.log(cat);
+          lines.add(cat);
+          //scene.add(this.cat);
         }
 
         for (var i = 0; i < arr.length; i++) {
