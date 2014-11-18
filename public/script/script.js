@@ -162,16 +162,16 @@
             tCurve.push(new THREE.Vector3(otherInfo.curves[i][j].x, otherInfo.curves[i][j].y, otherInfo.curves[i][j].z));
           }
           // console.log(otherInfo.ages[i]);
-          tCurve.age=otherInfo.ages[i];
+          tCurve.age = otherInfo.ages[i];
           tempCurves.push(tCurve);
         }
         // for(var i = 0 ; i < curves.length ; i++){
         //  tempCurves.push(curves[i]);
         // }
-        
+
         tempCurves.redraw = true;
         // tempCurves
-        drawLine(tempCurves);
+        drawLine(tempCurves, true);
         // drawLine(curves);
         // console.log(tempCurves);
         // console.log(curves);
@@ -180,7 +180,7 @@
       //  drawLine(curves);
     } else {
       otherHead.quaternion.copy(camera.quaternion);
-      otherHead.quaternion.y*=-1;
+      otherHead.quaternion.y *= -1;
       var vec = camera.position.clone();
       vec.multiplyScalar(2);
       otherHead.position = vec;
@@ -192,7 +192,7 @@
 
     }
     curves.redraw = true;
-    drawLine(curves);
+    drawLine(curves, false);
 
     socketInfo.quat = camera.quaternion;
     socketInfo.pos = camera.position;
@@ -200,7 +200,7 @@
     socketInfo.id = Math.random();
     socketInfo.ages = [];
 
-    for(var i = 0 ; i < curves.length ; i++){
+    for (var i = 0; i < curves.length; i++) {
       socketInfo.ages[i] = curves[i].age;
     }
 
@@ -256,11 +256,11 @@
     mouth.position.y = -.2;
     otherHead = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial());
     ear1 = otherHead.clone();
-    ear1.position.y=.5;
-    ear1.position.z=-.34;
+    ear1.position.y = .5;
+    ear1.position.z = -.34;
     ear1.position.x = .27;
     ear1.scale.x = ear1.scale.y = ear1.scale.z = .3;
-    ear1.rotation.z = Math.PI/4;
+    ear1.rotation.z = Math.PI / 4;
     ear2 = ear1.clone();
     ear2.position.x = -.27;
     otherHead.add(eyeBall);
@@ -271,8 +271,7 @@
     otherHeadParent.position.z = 3;
     otherHeadParent.position.y = 2;
     otherHead.add(ear1);
-        otherHead.add(ear2);
-
+    otherHead.add(ear2);
 
     lines = new THREE.Object3D();
 
@@ -323,11 +322,14 @@
     draw = false;
     var newLine = true;
 
-    var cat = new THREE.Mesh(new THREE.PlaneGeometry(.3,.3,12,12),new THREE.MeshLambertMaterial({transparent:true,map: THREE.ImageUtils.loadTexture('img/cat4.png')}))
+    var cat = new THREE.Mesh(new THREE.PlaneGeometry(.3, .3, 12, 12), new THREE.MeshLambertMaterial({
+      transparent: true,
+      map: THREE.ImageUtils.loadTexture('img/cat4.png')
+    }))
     cat.rotation.z = Math.PI;
     cat.position.z = .1;
     cat.scale.x = 1.3;
-    var catParent = new THREE.Object3D();
+    catParent = new THREE.Object3D();
     catParent.add(cat);
 
     vrMouse = new THREE.VRMouse(camera, pickTargets, {
@@ -377,14 +379,14 @@
           // console.log(intersection.point);
           if (intersection) {
             newCurve.redraw = true;
-            newCurve.age=0;
+            newCurve.age = 0;
             newCurve.push(intersection.point);
             if (!newCurve.age)
               newCurve.age = 0;
           }
         }
       },
-      pointer:catParent
+      pointer: catParent
     });
 
     scene.add(vrMouse.pointer);
@@ -669,10 +671,11 @@
 
   }
 
-  function drawLine(arr) {
+  function drawLine(arr, otherIsDrawing) {
 
     // removeLines();
     var geom = new THREE.PlaneGeometry(.1, .1, 1, 1);
+
     var mata = new THREE.MeshLambertMaterial({
       color: 0x555555,
       side: THREE.DoubleSide
@@ -681,12 +684,21 @@
     if (arr.redraw === true) {
 
       if (arr.length > 0) {
+
+        if (otherIsDrawing) {
+          var catPos = arr[arr.length - 1][arr[arr.length - 1].length - 1];
+          this.cat = catParent.clone();
+          this.cat.position = catPos;
+          lines.add(this.cat);
+        }
+
         for (var i = 0; i < arr.length; i++) {
-          if (arr[i].length > 3 && arr[i].age<100) {
-            var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.SplineCurve3(arr[i]), arr[i].length*3, .3*Math.max(.001, .333 - (.0001 + arr[i].age * .0033))), new THREE.MeshLambertMaterial({
+          if (arr[i].length > 3 && arr[i].age < 100) {
+            var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.SplineCurve3(arr[i]), arr[i].length * 3, .3 * Math.max(.001, .333 - (.0001 + arr[i].age * .0033))), new THREE.MeshLambertMaterial({
               color: 0xffffff,
               map: floorTexture
             }));
+
             lines.add(tube);
             // for(var j=0 ; j<arr[i].length ; j++){
 
@@ -827,7 +839,7 @@
   for (var i = 0; i < 256; i++) p.push(p[i]);
 }());
 
-function setScale(obj,s){
+function setScale(obj, s) {
   obj.scale.x = s;
   obj.scale.y = s;
   obj.scale.z = s;
