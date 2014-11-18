@@ -9,8 +9,8 @@
     MOVE_SPEED = 1,
     SLOW_SPEED = MOVE_SPEED / 2,
 
-    // socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
-    socket = io.connect('http://localhost'),
+    socket = io.connect('https://agile-brook-2507.herokuapp.com/'),
+    // socket = io.connect('http://localhost'),
 
     camera,
     head,
@@ -136,11 +136,11 @@
 
     updatePosition();
     vrControls.update();
-    // console.log(otherInfo.pos);
+    // console.log(otherInfo);
     if (otherInfo != null) {
       // console.log(otherInfo.quat);
       otherHead.quaternion.x = otherInfo.quat._x;
-      otherHead.quaternion.y = otherInfo.quat._y;
+      otherHead.quaternion.y = -otherInfo.quat._y;
       otherHead.quaternion.z = otherInfo.quat._z;
       otherHead.quaternion.w = otherInfo.quat._w;
       // otherHead.quaternion.copy(otherInfo.quat);
@@ -161,12 +161,16 @@
           for (var j = 0; j < otherInfo.curves[i].length; j++) {
             tCurve.push(new THREE.Vector3(otherInfo.curves[i][j].x, otherInfo.curves[i][j].y, otherInfo.curves[i][j].z));
           }
+          // console.log(otherInfo.ages[i]);
+          tCurve.age=otherInfo.ages[i];
           tempCurves.push(tCurve);
         }
         // for(var i = 0 ; i < curves.length ; i++){
         //  tempCurves.push(curves[i]);
         // }
+        
         tempCurves.redraw = true;
+        // tempCurves
         drawLine(tempCurves);
         // drawLine(curves);
         // console.log(tempCurves);
@@ -176,6 +180,7 @@
       //  drawLine(curves);
     } else {
       otherHead.quaternion.copy(camera.quaternion);
+      otherHead.quaternion.y*=-1;
       var vec = camera.position.clone();
       vec.multiplyScalar(2);
       otherHead.position = vec;
@@ -193,8 +198,13 @@
     socketInfo.pos = camera.position;
     socketInfo.curves = curves;
     socketInfo.id = Math.random();
+    socketInfo.ages = [];
 
-    //console.log(socketInfo);
+    for(var i = 0 ; i < curves.length ; i++){
+      socketInfo.ages[i] = curves[i].age;
+    }
+
+    // console.log(socketInfo);
     socket.emit('socketInfo', socketInfo);
     // console.log(curves);
     // console.log(otherHead.position);
@@ -206,7 +216,7 @@
     //     psys.geometry.attributes.position.array[i] += (.5-Math.random())*.1;
 
     // }
-    particleSystem.animate();
+    // particleSystem.animate();
     //   for(var q = 0 ; q < psys.geometry.attributes.size.array.length ; q++){
     //     if(psys.geometry.attributes.size.array[q]<.5)
     //         psys.geometry.attributes.size.array[q]+=.01;
@@ -245,6 +255,14 @@
     mouth.position.z = -.5;
     mouth.position.y = -.2;
     otherHead = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial());
+    ear1 = otherHead.clone();
+    ear1.position.y=.5;
+    ear1.position.z=-.34;
+    ear1.position.x = .27;
+    ear1.scale.x = ear1.scale.y = ear1.scale.z = .3;
+    ear1.rotation.z = Math.PI/4;
+    ear2 = ear1.clone();
+    ear2.position.x = -.27;
     otherHead.add(eyeBall);
     otherHead.add(eyeBall2);
     otherHead.add(mouth);
@@ -252,6 +270,9 @@
     otherHeadParent.add(otherHead);
     otherHeadParent.position.z = 3;
     otherHeadParent.position.y = 2;
+    otherHead.add(ear1);
+        otherHead.add(ear2);
+
 
     lines = new THREE.Object3D();
 
@@ -261,8 +282,8 @@
     scene.add(otherHeadParent);
 
     //scene.add(setupParticles());
-    particleSystem = new ParticleSystem();
-    scene.add(particleSystem.psys);
+    // particleSystem = new ParticleSystem();
+    // scene.add(particleSystem.psys);
 
     scene.add(lines);
     linePickSetup();
@@ -301,6 +322,13 @@
 
     draw = false;
     var newLine = true;
+
+    var cat = new THREE.Mesh(new THREE.PlaneGeometry(.3,.3,12,12),new THREE.MeshLambertMaterial({transparent:true,map: THREE.ImageUtils.loadTexture('img/cat4.png')}))
+    cat.rotation.z = Math.PI;
+    cat.position.z = .1;
+    cat.scale.x = 1.3;
+    var catParent = new THREE.Object3D();
+    catParent.add(cat);
 
     vrMouse = new THREE.VRMouse(camera, pickTargets, {
       element: renderer.domElement,
@@ -349,12 +377,14 @@
           // console.log(intersection.point);
           if (intersection) {
             newCurve.redraw = true;
+            newCurve.age=0;
             newCurve.push(intersection.point);
             if (!newCurve.age)
               newCurve.age = 0;
           }
         }
-      }
+      },
+      pointer:catParent
     });
 
     scene.add(vrMouse.pointer);
@@ -416,11 +446,11 @@
     var uniforms = {
       topColor: {
         type: "c",
-        value: new THREE.Color(0x0077ff)
+        value: new THREE.Color(0xffffff)
       },
       bottomColor: {
         type: "c",
-        value: new THREE.Color(0xffffff)
+        value: new THREE.Color(0x0088ff)
       },
       offset: {
         type: "f",
@@ -428,7 +458,7 @@
       },
       exponent: {
         type: "f",
-        value: 0.6
+        value: 0.1
       }
     };
     uniforms.topColor.value.copy(hemiLight.color);
@@ -440,10 +470,12 @@
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       uniforms: uniforms,
-      side: THREE.BackSide
+      side: THREE.BackSide,
+
     });
 
     var sky = new THREE.Mesh(skyGeo, skyMat);
+    // setScale(sky,1)
     scene.add(sky);
     pickTargets.push(sky);
 
@@ -584,8 +616,9 @@
     plane2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 10, 10), new THREE.MeshLambertMaterial({
       color: 0xFFFFFF,
       transparent: true,
-      opacity: .1,
-      emissive: 0x99DDFF
+      opacity: .3,
+      emissive: 0x99DDFF,
+      map: THREE.ImageUtils.loadTexture('img/dirty.png')
     }));
     plane2.rotation.x = Math.PI;
     plane2.position.z = 2;
@@ -625,7 +658,7 @@
         curves[i].age++;
       else
         curves[i].age++;
-      if (i < curves.length - 1 && curves[i].age > 1000) {
+      if (i < curves.length - 1 && curves[i].age > 100) {
         curves.splice(i, 1);
       }
       if (curves[i].length > 100) {
@@ -649,8 +682,8 @@
 
       if (arr.length > 0) {
         for (var i = 0; i < arr.length; i++) {
-          if (arr[i].length > 3) {
-            var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.SplineCurve3(arr[i]), arr[i].length, Math.max(.1, .3 - (.0001 + arr[i].age * .004))), new THREE.MeshLambertMaterial({
+          if (arr[i].length > 3 && arr[i].age<100) {
+            var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.SplineCurve3(arr[i]), arr[i].length*3, .3*Math.max(.001, .333 - (.0001 + arr[i].age * .0033))), new THREE.MeshLambertMaterial({
               color: 0xffffff,
               map: floorTexture
             }));
@@ -688,30 +721,30 @@
             // else
             //   counter++;
 
-            if (arr[i].length > 1 && draw) {
-              for (var j = arr[i].length - 1; j < arr[i].length; j++) {
+            // if (arr[i].length > 1 && draw) {
+            //   for (var j = arr[i].length - 1; j < arr[i].length; j++) {
 
-                if (counter + 60 > particleSystem.psys.geometry.attributes.position.array.length)
-                  counter = 0;
-                else
-                  counter += 30;
+            //     if (counter + 60 > particleSystem.psys.geometry.attributes.position.array.length)
+            //       counter = 0;
+            //     else
+            //       counter += 30;
 
-                var p = counter / 3;
+            //     var p = counter / 3;
 
-                for (var k = counter; k < counter + 30; k += 3) {
+            //     for (var k = counter; k < counter + 30; k += 3) {
 
-                  particleSystem.psys.geometry.attributes.position.array[k] = arr[i][j].x + Math.random() * .1;
-                  particleSystem.psys.geometry.attributes.position.array[k + 1] = arr[i][j].y + Math.random() * .1;
-                  particleSystem.psys.geometry.attributes.position.array[k + 2] = arr[i][j].z + Math.random() * .1;
+            //       particleSystem.psys.geometry.attributes.position.array[k] = arr[i][j].x + Math.random() * .1;
+            //       particleSystem.psys.geometry.attributes.position.array[k + 1] = arr[i][j].y + Math.random() * .1;
+            //       particleSystem.psys.geometry.attributes.position.array[k + 2] = arr[i][j].z + Math.random() * .1;
 
-                  particleSystem.psys.geometry.attributes.size.array[p] = .02;
+            //       particleSystem.psys.geometry.attributes.size.array[p] = .02;
 
-                  p++;
+            //       p++;
 
-                }
+            //     }
 
-              }
-            }
+            //   }
+            // }
 
           }
         }
@@ -793,3 +826,9 @@
   ];
   for (var i = 0; i < 256; i++) p.push(p[i]);
 }());
+
+function setScale(obj,s){
+  obj.scale.x = s;
+  obj.scale.y = s;
+  obj.scale.z = s;
+}
