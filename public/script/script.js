@@ -31,7 +31,6 @@
       d: false
     },
     moving = false,
-    stats,
 
     moveVector = new THREE.Vector3(),
     leftVector = new THREE.Vector3(),
@@ -48,9 +47,11 @@
     infobutton = document.getElementById('infobutton'),
     info = document.getElementById('info');
 
+  var particleSystem;
+  var stats;
+
   var socketInfo = {};
   otherInfo = null;
-  var particleSystem;
 
   var clock = new THREE.Clock();
 
@@ -200,20 +201,25 @@
     // otherHead.quaternion.x+=.4;
     vrEffect.render(scene, camera);
 
-    //animate particle system
-    // for (var i = 0; i < psys.geometry.attributes.position.array.length; i++) {
+    // for( var i = 0; i < psys.geometry.attributes.position.array.length; i++ ) {
 
-    //   var pos = psys.geometry.attributes.position.array[i];
-    //   psys.geometry.attributes.position.array[i] += (.5 - Math.random()) * .1;
+    //     psys.geometry.attributes.position.array[i] += (.5-Math.random())*.1;
 
     // }
     particleSystem.animate();
+    //   for(var q = 0 ; q < psys.geometry.attributes.size.array.length ; q++){
+    //     if(psys.geometry.attributes.size.array[q]<.5)
+    //         psys.geometry.attributes.size.array[q]+=.01;
+    //   }
+    //   for(var q = 0 ; q < psys.geometry.attributes.position.array.length ; q++){
+    //     psys.geometry.attributes.position.array[q]+=Math.sin(psys.geometry.attributes.position.array[q]+q)*.001;
+    //   }
 
     // psys.geometry.attributes.size.needsUpdate = true;
     // psys.geometry.attributes.position.needsUpdate = true;
-    // psys.material.uniforms.time.value = Math.random();
+    // psys.material.uniforms.time.value =.1;
     // psys.material.uniforms.offz.value = Math.random()+15;
-    // psys.material.uniforms.offer.value = Math.random();
+    // psys.material.uniforms.offer.value +=3.3;
     // psys.material.uniforms.pSize.value = Math.random();
 
     // psys.material.uniforms.boing.value = Math.random();//*mouseX*30;
@@ -254,8 +260,7 @@
     scene = new THREE.Scene();
     scene.add(otherHeadParent);
 
-    //set up particleSystem
-    // scene.add(setupParticles());
+    //scene.add(setupParticles());
     particleSystem = new ParticleSystem();
     scene.add(particleSystem.psys);
 
@@ -289,12 +294,12 @@
       );
       box.receiveShadow = true;
       scene.add(box);
-      // pickTargets.push(box);
+      pickTargets.push(box);
     }
 
     curves = [];
 
-    var draw = false;
+    draw = false;
     var newLine = true;
 
     vrMouse = new THREE.VRMouse(camera, pickTargets, {
@@ -381,7 +386,7 @@
     floor.receiveShadow = true;
     floor.rotateX(-Math.PI / 2);
     scene.add(floor);
-    // pickTargets.push(floor);
+    pickTargets.push(floor);
 
     var sphere = new THREE.Mesh(
       new THREE.SphereGeometry(1, 32, 32),
@@ -392,7 +397,7 @@
     sphere.position.set(0, 10, 4);
     sphere.name = 'sphere';
     scene.add(sphere);
-    // pickTargets.push( sphere );
+    pickTargets.push(sphere);
 
     var directionalLight = new THREE.DirectionalLight(0xffffff, 1.475);
     directionalLight.position.set(100, 100, -100);
@@ -440,6 +445,7 @@
 
     var sky = new THREE.Mesh(skyGeo, skyMat);
     scene.add(sky);
+    pickTargets.push(sky);
 
     renderer.setClearColor(scene.fog.color, 1);
     renderer.shadowMapType = THREE.PCFSoftShadowMap;
@@ -619,7 +625,7 @@
         curves[i].age++;
       else
         curves[i].age++;
-      if (i < curves.length - 1 && curves[i].age > 100) {
+      if (i < curves.length - 1 && curves[i].age > 1000) {
         curves.splice(i, 1);
       }
       if (curves[i].length > 100) {
@@ -644,30 +650,30 @@
       if (arr.length > 0) {
         for (var i = 0; i < arr.length; i++) {
           if (arr[i].length > 3) {
-            var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.SplineCurve3(arr[i]), arr[i].length, Math.max(.0001, .04 - (.0001 + arr[i].age * .0004))), new THREE.MeshLambertMaterial({
+            var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.SplineCurve3(arr[i]), arr[i].length, Math.max(.1, .3 - (.0001 + arr[i].age * .004))), new THREE.MeshLambertMaterial({
               color: 0xffffff,
               map: floorTexture
             }));
             lines.add(tube);
-            // for (var j = 0; j < arr[i].length; j++) {
+            // for(var j=0 ; j<arr[i].length ; j++){
 
-            //   var mesh = new THREE.Mesh(geom, mata);
+            //   var mesh = new THREE.Mesh(geom,mata);
             //   mesh.position.x = arr[i][j].x;
             //   mesh.position.y = arr[i][j].y;
             //   mesh.position.z = arr[i][j].z;
 
-            //   if (!arr[i][j].age)
-            //     arr[i][j].age = 0.001;
+            //   if(!arr[i][j].age)
+            //     arr[i][j].age=0.001;
             //   else
             //     arr[i][j].age++;
 
-            //   mesh.position.x += .1 * (Math.sin(Math.PI * 2 * noise(arr[i][j].x, arr[i][j].y, arr[i][j].z) * arr[i][j].age * .1));
-            //   mesh.position.y += .1 * (Math.cos(Math.PI * 2 * noise(arr[i][j].x, arr[i][j].y, arr[i][j].z) * arr[i][j].age * .1));
-            //   mesh.position.z += .1 * (Math.sin(Math.PI * 2 * noise(arr[i][j].x, arr[i][j].y, arr[i][j].z) * arr[i][j].age * .1));
+            //     mesh.position.x += .1*(Math.sin(Math.PI*2*noise(arr[i][j].x,arr[i][j].y,arr[i][j].z)*arr[i][j].age*.1));
+            //   mesh.position.y += .1*(Math.cos(Math.PI*2*noise(arr[i][j].x,arr[i][j].y,arr[i][j].z)*arr[i][j].age*.1));
+            //   mesh.position.z += .1*(Math.sin(Math.PI*2*noise(arr[i][j].x,arr[i][j].y,arr[i][j].z)*arr[i][j].age*.1));
 
             //   // var up = (j/arr[i].length)*5;
             //   // mesh.scale.multiply(new THREE.Vector3(up,up,up));
-            //   mesh.scale.multiplyScalar(Math.max(.001, 2 - (.0001 + arr[i][j].age * .051)));
+            //   mesh.scale.multiplyScalar(Math.max(.001,2-(.0001+arr[i][j].age*.051)));
 
             //   // console.log(mesh.position);
 
@@ -676,6 +682,37 @@
             //   // scene.add(mesh);
 
             // }
+            //
+            if (typeof counter === 'undefined')
+              counter = 0;
+            // else
+            //   counter++;
+
+            if (arr[i].length > 1 && draw) {
+              for (var j = arr[i].length - 1; j < arr[i].length; j++) {
+
+                if (counter + 60 > particleSystem.psys.geometry.attributes.position.array.length)
+                  counter = 0;
+                else
+                  counter += 30;
+
+                var p = counter / 3;
+
+                for (var k = counter; k < counter + 30; k += 3) {
+
+                  particleSystem.psys.geometry.attributes.position.array[k] = arr[i][j].x + Math.random() * .1;
+                  particleSystem.psys.geometry.attributes.position.array[k + 1] = arr[i][j].y + Math.random() * .1;
+                  particleSystem.psys.geometry.attributes.position.array[k + 2] = arr[i][j].z + Math.random() * .1;
+
+                  particleSystem.psys.geometry.attributes.size.array[p] = .02;
+
+                  p++;
+
+                }
+
+              }
+            }
+
           }
         }
       }
