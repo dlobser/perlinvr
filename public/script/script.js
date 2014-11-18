@@ -364,12 +364,6 @@
           brushButton.startCounting = true;
           brush = "brush";
         }
-        if (intersection) {
-          newCurve.redraw = true;
-          newCurve.push(intersection.point);
-          if (!newCurve.age)
-            newCurve.age = 0;
-        }
       },
       onMouseDown: function () {
         draw = true;
@@ -390,7 +384,12 @@
         if (draw) {
           curves.redraw = true;
           // console.log(intersection.point);
-
+          if (intersection) {
+            newCurve.redraw = true;
+            newCurve.push(intersection.point);
+            if (!newCurve.age)
+              newCurve.age = 0;
+          }
         }
       }
     });
