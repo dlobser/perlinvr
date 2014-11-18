@@ -55,6 +55,9 @@
 
   var clock = new THREE.Clock();
 
+  var brushButton, catButton;
+  var brush = "brushButton";
+
   THREE.Clock.prototype.reset = function () {
     this.startTime = 0;
     this.oldTime = 0;
@@ -137,7 +140,7 @@
     updatePosition();
     vrControls.update();
     // console.log(otherInfo.pos);
-    if (otherInfo != null) {
+    if (otherInfo !== null) {
       // console.log(otherInfo.quat);
       otherHead.quaternion.x = otherInfo.quat._x;
       otherHead.quaternion.y = otherInfo.quat._y;
@@ -223,6 +226,27 @@
     // psys.material.uniforms.pSize.value = Math.random();
 
     // psys.material.uniforms.boing.value = Math.random();//*mouseX*30;
+
+    if (catButton.startCounting) {
+      catButton.counter++;
+    }
+
+    if (catButton.counter > 10) {
+      catButton.material.color.setHex(0xffffff);
+      catButton.counter = 0;
+      catButton.startCounting = false;
+    }
+
+    if (brushButton.startCounting) {
+      brushButton.counter++;
+    }
+
+    if (brushButton.counter > 10) {
+      brushButton.material.color.setHex(0xffffff);
+      brushButton.counter = 0;
+      brushButton.startCounting = false;
+    }
+
     stats.update();
     requestAnimationFrame(animate);
   }
@@ -293,6 +317,7 @@
         Math.sin(angle) * 10
       );
       box.receiveShadow = true;
+      //console.log(box.position.x, box.position.y, box.position.z)
       scene.add(box);
       pickTargets.push(box);
     }
@@ -309,10 +334,10 @@
       newLine: true,
       // check: 12,
       onMouseOver: function (obj) {
-        console.log('hover', obj);
+        //console.log('hover', obj);
       },
       onMouseOut: function (obj) {
-        console.log('stop hover', obj);
+        //console.log('stop hover', obj);
       },
       onClick: function (intersection) {
         // console.log(this.check);
@@ -327,6 +352,24 @@
         // pickTargets.push(box);
         // this.draw=!this.draw;
         // console.log(this.draw);
+        console.log(intersection.object);
+        if (intersection.object.name === "cat") {
+          console.log("meow!~~~~~");
+          catButton.material.color.setHex(0xff0000);
+          catButton.startCounting = true;
+          brush = "cat";
+        } else if (intersection.object.name === "brush") {
+          console.log("brush!~~~~~");
+          brushButton.material.color.setHex(0xff0000);
+          brushButton.startCounting = true;
+          brush = "brush";
+        }
+        if (intersection) {
+          newCurve.redraw = true;
+          newCurve.push(intersection.point);
+          if (!newCurve.age)
+            newCurve.age = 0;
+        }
       },
       onMouseDown: function () {
         draw = true;
@@ -347,12 +390,7 @@
         if (draw) {
           curves.redraw = true;
           // console.log(intersection.point);
-          if (intersection) {
-            newCurve.redraw = true;
-            newCurve.push(intersection.point);
-            if (!newCurve.age)
-              newCurve.age = 0;
-          }
+
         }
       }
     });
@@ -445,7 +483,48 @@
 
     var sky = new THREE.Mesh(skyGeo, skyMat);
     scene.add(sky);
+    //console.log(sky.position.x, sky.position.y, sky.position.z)
     pickTargets.push(sky);
+
+    //BUTTONS
+    geometry = new THREE.PlaneGeometry(.3, .3);
+    var catTexture = THREE.ImageUtils.loadTexture('img/cat4.png');
+    material = new THREE.MeshLambertMaterial({
+      color: 0xffffff,
+      side: THREE.DoubleSide,
+      map: catTexture,
+      //blending: THREE.AdditiveBlending,
+      transparent: true
+    });
+    catButton = new THREE.Mesh(geometry, material);
+    catButton.rotation.x = Math.PI;
+    catButton.position.y = 1.5;
+    catButton.position.z = 1.4;
+    catButton.position.x = -1;
+    catButton.name = "cat";
+    catButton.counter = 0;
+    catButton.startCounting = false;
+    scene.add(catButton);
+    pickTargets.push(catButton);
+
+    var brushTexture = new THREE.ImageUtils.loadTexture('img/brush.png');
+    material = new THREE.MeshLambertMaterial({
+      color: 0xffffff,
+      side: THREE.DoubleSide,
+      map: brushTexture,
+      //blending: THREE.AdditiveBlending,
+      transparent: true
+    });
+    brushButton = new THREE.Mesh(geometry, material);
+    brushButton.rotation.x = Math.PI;
+    brushButton.position.y = 1.9;
+    brushButton.position.z = 1.4;
+    brushButton.position.x = -1;
+    brushButton.name = "brush";
+    brushButton.counter = 0;
+    brushButton.startCounting = false;
+    scene.add(brushButton);
+    pickTargets.push(brushButton);
 
     renderer.setClearColor(scene.fog.color, 1);
     renderer.shadowMapType = THREE.PCFSoftShadowMap;
